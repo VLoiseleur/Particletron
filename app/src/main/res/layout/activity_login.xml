@@ -9,8 +9,28 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.sodomakerspace.particletron.LoginActivity">
 
-    <TextView
+    <EditText
+        android:id="@+id/password_editText"
+        android:layout_width="240dp"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:hint="password" />
+
+    <EditText
+        android:id="@+id/email_editText"
+        android:layout_width="240dp"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_above="@id/password_editText"
+        android:hint="email" />
+
+    <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!" />
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/password_editText"
+        android:text="Login"
+        android:textSize="24dp"
+        android:onClick="sendLogin"/>
 </RelativeLayout>
