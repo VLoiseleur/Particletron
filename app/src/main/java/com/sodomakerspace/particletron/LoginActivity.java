@@ -3,8 +3,11 @@ package com.sodomakerspace.particletron;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import java.io.IOException;
 
@@ -20,8 +23,27 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+        // Grab our UI elements
+        final EditText passwordField = (EditText) findViewById(R.id.password_editText);
+
         // Initialize our Particle SDK
         ParticleCloudSDK.init(this);
+
+        final View view = this.getCurrentFocus();
+
+        // Listener for user submitting their login information
+        passwordField.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                boolean handled = false;
+                if (actionId == EditorInfo.IME_ACTION_SEND) {
+                    // Submit info for login
+                    sendLogin(view);
+                    handled = true;
+                }
+                return handled;
+            }
+        });
     }
 
     public void sendLogin(View view) {

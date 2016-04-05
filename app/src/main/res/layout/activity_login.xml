@@ -15,7 +15,9 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
-        android:hint="password" />
+        android:hint="password"
+        android:inputType="textPassword"
+        android:imeOptions="actionSend"/>
 
     <EditText
         android:id="@+id/email_editText"
@@ -23,7 +25,9 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_above="@id/password_editText"
-        android:hint="email" />
+        android:hint="email"
+        android:inputType="textEmailAddress"
+        android:imeOptions="actionNext"/>
 
     <Button
         android:layout_width="wrap_content"
