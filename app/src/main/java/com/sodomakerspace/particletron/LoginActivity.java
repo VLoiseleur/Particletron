@@ -56,7 +56,7 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public Object callApi(ParticleCloud particleCloud) throws ParticleCloudException, IOException {
                 ParticleCloudSDK.getCloud().logIn(email, password);
-                return -1;
+                return 0;
             }
 
             @Override
