@@ -3,13 +3,17 @@ package com.sodomakerspace.particletron;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import io.particle.android.sdk.cloud.ParticleCloud;
 import io.particle.android.sdk.cloud.ParticleCloudException;
@@ -21,6 +25,7 @@ public class DashboardActivity extends AppCompatActivity {
 
     // UI elements
     public TextView output;
+    private LinearLayout topLayout;
 
     private ParticleDevice testDevice;
 
@@ -31,29 +36,47 @@ public class DashboardActivity extends AppCompatActivity {
 
         // Get our UI elements
         output = (TextView) findViewById(R.id.output_textiView);
+
+        // Create our toolbar
         Toolbar dashboardToolbar = (Toolbar) findViewById(R.id.dashboard_toolbar);
+        dashboardToolbar.setTitle("Dashboard");
         setSupportActionBar(dashboardToolbar);
 
-        // Print the list of registered Particle devices for this account to our output log
-        getDevices();
+        // Generate a button for every registered Particle device
+        topLayout = (LinearLayout) findViewById(R.id.view_dashboardTop);
+        createDeviceButtons(topLayout);
     }
 
-    private void getDevices () {
+    @Override
+    public boolean onCreateOptionsMenu (Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.dashboard_buttons, menu);
+        return true;
+    }
+
+    private void createDeviceButtons (final View view) {
         // Attempt to get the list of devices that belong to the currently logged-in user
-        Async.executeAsync(ParticleCloudSDK.getCloud(), new Async.ApiWork<ParticleCloud, Object>() {
+        Async.executeAsync(ParticleCloudSDK.getCloud(), new Async.ApiWork<ParticleCloud, List<ParticleDevice>>() {
             @Override
-            public Object callApi(ParticleCloud particleCloud) throws ParticleCloudException, IOException {
-                List<ParticleDevice> devices = ParticleCloudSDK.getCloud().getDevices();
-                for (int i = 0; i < devices.size(); i++) {
-                    writeLine(devices.get(i).getName());
-                    writeLine(devices.get(i).getID());
-                    testDevice = devices.get(i);
-                }
-                return 0;
+            public List<ParticleDevice> callApi(ParticleCloud particleCloud) throws ParticleCloudException, IOException {
+                return ParticleCloudSDK.getCloud().getDevices();
             }
 
             @Override
-            public void onSuccess(Object o) {
+            // Generate a new button for each registered device
+            public void onSuccess(List<ParticleDevice> value) {
+                // Populate an array to use with our array adapter
+                String[] buttons = new String[value.size()];
+                for (int i = 0; i < value.size(); i++) {
+                    buttons[i] = value.get(i).getName();
+                }
+
+                // Populate our listview with all of our device names
+                if (buttons != null) {
+                    ArrayAdapter<String> adapter = new ArrayAdapter<>(view.getContext(), android.R.layout.simple_list_item_1, buttons);
+                    ListView listView = (ListView) findViewById(R.id.myListView);
+                    listView.setAdapter(adapter);
+                }
             }
 
             @Override
@@ -64,25 +87,23 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     public void toggleLight (View view) {
+        lightSwitch(testDevice);
+    }
+
+    public void listDeviceFunctions (View view) {
         writeLine("Listing available functions on device: " + testDevice.getID());
         for (String name : testDevice.getFunctions()) {
             writeLine("Device has function: " + name);
         }
-
-        Map<String, ParticleDevice.VariableType> variables = testDevice.getVariables();
-        for (String name : variables.keySet()) {
-            writeLine(String.format("variable '%s' type is '%s'", name, variables.get(name)));
-        }
-        //lightSwitch(testDevice);
     }
 
     private void lightSwitch(final ParticleDevice device) {
-        final List<String> commands = Arrays.asList("D7", "high");
+        final List<String> commands = Arrays.asList("on");
         Async.executeAsync(ParticleCloudSDK.getCloud(), new Async.ApiWork<ParticleCloud, Object>() {
             @Override
             public Object callApi(ParticleCloud particleCloud) throws ParticleCloudException, IOException {
                 try {
-                    int resultCode = device.callFunction("digitalwrite", commands);
+                    int resultCode = device.callFunction("led", commands);
                     writeLine("Result of running command: " + resultCode);
                 } catch (ParticleDevice.FunctionDoesNotExistException e) {
                     e.printStackTrace();
