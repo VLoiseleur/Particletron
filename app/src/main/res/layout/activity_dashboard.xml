@@ -8,7 +8,6 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:weightSum="2"
     android:orientation="vertical"
     tools:context="com.sodomakerspace.particletron.DashboardActivity">
 
@@ -22,37 +21,93 @@
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
 
     <LinearLayout
-        android:id="@+id/view_dashboardTop"
+        android:id="@+id/view_dashboard"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <ScrollView
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="My devices"
+            android:padding="10dp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/device_name"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:hint="Device name"
+            android:inputType="textNoSuggestions"/>
+
+        <EditText
+            android:id="@+id/function_name"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:hint="Function name"
+            android:inputType="textNoSuggestions"/>
+
+        <EditText
+            android:id="@+id/function_parameters"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:hint="Function arguments"
+            android:inputType="textNoSuggestions"/>
+
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content">
 
-            <ListView
-                android:id="@+id/myListView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-            </ListView>
-        </ScrollView>
-    </LinearLayout>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Functions"
+                android:onClick="getDeviceFunctions"
+                android:id="@+id/functions_button" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1">
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Send"
+                android:onClick="toggleLight"
+                android:layout_toEndOf="@id/functions_button"
+                android:id="@+id/send_button" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Log Out"
+                android:id="@+id/logout_button"
+                android:layout_alignParentRight="true"
+                android:onClick="logOut" />
+
+        </RelativeLayout>
 
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
             <TextView
-                android:id="@+id/output_textiView"
+                android:id="@+id/output_textView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom" />
         </ScrollView>
+
+        <!--
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ListView
+                android:id="@+id/device_listView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+            </ListView>
+        </ScrollView>
+        -->
+
     </LinearLayout>
+
 </LinearLayout>

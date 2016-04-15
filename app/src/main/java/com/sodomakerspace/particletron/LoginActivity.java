@@ -1,11 +1,14 @@
 package com.sodomakerspace.particletron;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -18,16 +21,28 @@ import io.particle.android.sdk.utils.Async;
 
 public class LoginActivity extends AppCompatActivity {
 
+    // UI Elements
+    private EditText emailField;
+    private CheckBox saveUserCredentials;
+
+    private SharedPreferences loginPref;
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate (Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
         // Grab our UI elements
+        emailField = (EditText) findViewById(R.id.email_editText);
+        saveUserCredentials = (CheckBox) findViewById(R.id.saveUserCredentials);
         final EditText passwordField = (EditText) findViewById(R.id.password_editText);
 
-        // Initialize our Particle SDK
-        ParticleCloudSDK.init(this);
+        // Populate our login field if we can find stored data
+        loginPref = this.getPreferences(Context.MODE_PRIVATE);
+        String defaultEmail = "";
+        String loginEmail = loginPref.getString(getString(R.string.saved_email), defaultEmail);
+        if (!loginEmail.isEmpty() && emailField != null)
+            emailField.setText(loginEmail);
 
         final View view = this.getCurrentFocus();
 
@@ -44,6 +59,30 @@ public class LoginActivity extends AppCompatActivity {
                 return handled;
             }
         });
+    }
+
+    @Override
+    protected void onPause () {
+        super.onPause();
+        // Save any user information
+        if (saveUserCredentials.isChecked()) {
+            // Save login email
+            String emailLogin = emailField.getText().toString();
+
+            // Save boolean state of checkbox
+            String checkbox = "true";
+
+            SharedPreferences.Editor editor = loginPref.edit();
+            editor.putString(getString(R.string.saved_email), emailLogin);
+            editor.putString(getString(R.string.saved_preferences), checkbox);
+
+            editor.apply();
+        }
+        else {
+            SharedPreferences.Editor editor = loginPref.edit();
+            editor.clear();
+            editor.apply();
+        }
     }
 
     public void sendLogin(View view) {

@@ -10,32 +10,39 @@
     tools:context="com.sodomakerspace.particletron.LoginActivity">
 
     <EditText
+        android:id="@+id/email_editText"
+        android:layout_width="240dp"
+        android:layout_height="wrap_content"
+        android:hint="email"
+        android:inputType="textEmailAddress"
+        android:imeOptions="actionNext"
+        android:layout_centerInParent="true" />
+
+    <EditText
         android:id="@+id/password_editText"
         android:layout_width="240dp"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
         android:hint="password"
         android:inputType="textPassword"
-        android:imeOptions="actionSend"/>
+        android:imeOptions="actionSend"
+        android:layout_below="@+id/email_editText" />
 
-    <EditText
-        android:id="@+id/email_editText"
-        android:layout_width="240dp"
+    <CheckBox
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="Remember me"
+        android:id="@+id/saveUserCredentials"
         android:layout_centerHorizontal="true"
-        android:layout_above="@id/password_editText"
-        android:hint="email"
-        android:inputType="textEmailAddress"
-        android:imeOptions="actionNext"/>
+        android:layout_below="@+id/password_editText" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_below="@id/password_editText"
+        android:layout_below="@+id/saveUserCredentials"
         android:text="Login"
         android:textSize="24dp"
-        android:onClick="sendLogin"/>
-
+        android:onClick="sendLogin"
+        android:id="@+id/button" />
 </RelativeLayout>
