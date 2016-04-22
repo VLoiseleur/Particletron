@@ -1,9 +1,8 @@
 <resources>
     <string name="app_name">Particletron</string>
-    <string name="saved_email"></string>
-    <string name="saved_password"></string>
-    <string name="saved_preferences">false</string>
-    <string name ="action_new">New</string>
-    <string name ="action_settings">Settings</string>
-    <string name="device1">Device</string>
+    <string name="saved_email">testuser</string>
+    <string name="saved_password">testpass</string>
+    <string name="action_new">New</string>
+    <string name="action_settings">Settings</string>
+    <string name="dashboard_header">My Particle devices</string>
 </resources>

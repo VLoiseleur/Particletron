@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -23,7 +22,7 @@ public class LoginActivity extends AppCompatActivity {
 
     // UI Elements
     private EditText emailField;
-    private CheckBox saveUserCredentials;
+    private EditText passwordField;
 
     private SharedPreferences loginPref;
 
@@ -34,15 +33,18 @@ public class LoginActivity extends AppCompatActivity {
 
         // Grab our UI elements
         emailField = (EditText) findViewById(R.id.email_editText);
-        saveUserCredentials = (CheckBox) findViewById(R.id.saveUserCredentials);
-        final EditText passwordField = (EditText) findViewById(R.id.password_editText);
+        passwordField = (EditText) findViewById(R.id.password_editText);
 
         // Populate our login field if we can find stored data
         loginPref = this.getPreferences(Context.MODE_PRIVATE);
-        String defaultEmail = "";
-        String loginEmail = loginPref.getString(getString(R.string.saved_email), defaultEmail);
+        String defaultField = "";
+        String loginEmail = loginPref.getString(getString(R.string.saved_email), defaultField);
         if (!loginEmail.isEmpty() && emailField != null)
             emailField.setText(loginEmail);
+
+        String loginPassword = loginPref.getString(getString(R.string.saved_password), defaultField);
+        if (!loginPassword.isEmpty() && passwordField != null)
+            passwordField.setText(loginPassword);
 
         final View view = this.getCurrentFocus();
 
@@ -64,32 +66,25 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onPause () {
         super.onPause();
-        // Save any user information
-        if (saveUserCredentials.isChecked()) {
-            // Save login email
-            String emailLogin = emailField.getText().toString();
 
-            // Save boolean state of checkbox
-            String checkbox = "true";
+        // Save login email
+        String emailLogin = emailField.getText().toString();
 
-            SharedPreferences.Editor editor = loginPref.edit();
-            editor.putString(getString(R.string.saved_email), emailLogin);
-            editor.putString(getString(R.string.saved_preferences), checkbox);
+        // TODO: Encrypt password
+        String passwordLogin = passwordField.getText().toString();
 
-            editor.apply();
-        }
-        else {
-            SharedPreferences.Editor editor = loginPref.edit();
-            editor.clear();
-            editor.apply();
-        }
+        SharedPreferences.Editor editor = loginPref.edit();
+        // Does getString() return the value or the key?
+        editor.putString(getString(R.string.saved_email), emailLogin);
+        editor.putString(getString(R.string.saved_password), passwordLogin);
+        editor.apply();
     }
 
     public void sendLogin(View view) {
 
         // Get the user's entered email and password
-        final String email = ((EditText) findViewById(R.id.email_editText)).getText().toString();
-        final String password = ((EditText) findViewById(R.id.password_editText)).getText().toString();
+        final String email = emailField.getText().toString();
+        final String password = passwordField.getText().toString();
 
         Async.executeAsync(ParticleCloudSDK.getCloud(), new Async.ApiWork<ParticleCloud, Object>() {
             @Override
@@ -104,6 +99,7 @@ public class LoginActivity extends AppCompatActivity {
                 launchDashboard();
             }
 
+            // TODO: Add error message for incorrect credentials
             @Override
             public void onFailure(ParticleCloudException exception) {
                 exception.printStackTrace();

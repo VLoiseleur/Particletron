@@ -30,23 +30,23 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="My devices"
+            android:text="@string/dashboard_header"
             android:padding="10dp"
             android:textStyle="bold" />
 
-        <EditText
-            android:id="@+id/device_name"
-            android:layout_width="200dp"
+        <Spinner
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Device name"
-            android:inputType="textNoSuggestions"/>
+            android:id="@+id/deviceName_spinner"
+            android:spinnerMode="dropdown"
+            android:layout_gravity="start" />
 
-        <EditText
-            android:id="@+id/function_name"
-            android:layout_width="200dp"
+        <Spinner
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Function name"
-            android:inputType="textNoSuggestions"/>
+            android:id="@+id/functionName_spinner"
+            android:spinnerMode="dropdown"
+            android:layout_gravity="start" />
 
         <EditText
             android:id="@+id/function_parameters"
@@ -62,16 +62,9 @@
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Functions"
-                android:onClick="getDeviceFunctions"
-                android:id="@+id/functions_button" />
-
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
                 android:text="Send"
-                android:onClick="toggleLight"
-                android:layout_toEndOf="@id/functions_button"
+                android:onClick="sendFunction"
+                android:layout_alignParentStart="true"
                 android:id="@+id/send_button" />
 
             <Button
@@ -79,34 +72,10 @@
                 android:layout_height="wrap_content"
                 android:text="Log Out"
                 android:id="@+id/logout_button"
-                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
                 android:onClick="logOut" />
 
         </RelativeLayout>
-
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <TextView
-                android:id="@+id/output_textView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom" />
-        </ScrollView>
-
-        <!--
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <ListView
-                android:id="@+id/device_listView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-            </ListView>
-        </ScrollView>
-        -->
 
     </LinearLayout>
 
