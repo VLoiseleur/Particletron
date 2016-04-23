@@ -17,6 +17,7 @@ import io.particle.android.sdk.cloud.ParticleCloud;
 import io.particle.android.sdk.cloud.ParticleCloudException;
 import io.particle.android.sdk.cloud.ParticleCloudSDK;
 import io.particle.android.sdk.utils.Async;
+import io.particle.android.sdk.utils.Toaster;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -99,9 +100,9 @@ public class LoginActivity extends AppCompatActivity {
                 launchDashboard();
             }
 
-            // TODO: Add error message for incorrect credentials
             @Override
             public void onFailure(ParticleCloudException exception) {
+                Toaster.l(LoginActivity.this, "Uh oh, those credentials don't match our records.");
                 exception.printStackTrace();
             }
         });

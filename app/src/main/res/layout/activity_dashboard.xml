@@ -34,15 +34,28 @@
             android:padding="10dp"
             android:textStyle="bold" />
 
-        <Spinner
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/deviceName_spinner"
-            android:spinnerMode="dropdown"
-            android:layout_gravity="start" />
+            android:layout_height="wrap_content">
+
+            <Spinner
+                android:layout_width="250dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/deviceName_spinner"
+                android:spinnerMode="dropdown"
+                android:layout_gravity="start" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/deviceStatus_image"
+                android:src="@drawable/ic_flash_off_black_24dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true" />
+        </RelativeLayout>
 
         <Spinner
-            android:layout_width="match_parent"
+            android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:id="@+id/functionName_spinner"
             android:spinnerMode="dropdown"
@@ -65,7 +78,9 @@
                 android:text="Send"
                 android:onClick="sendFunction"
                 android:layout_alignParentStart="true"
-                android:id="@+id/send_button" />
+                android:id="@+id/send_button"
+                android:padding="18dp"
+                android:textSize="18dp" />
 
             <Button
                 android:layout_width="wrap_content"
@@ -73,7 +88,10 @@
                 android:text="Log Out"
                 android:id="@+id/logout_button"
                 android:layout_alignParentEnd="true"
-                android:onClick="logOut" />
+                android:onClick="logOut"
+                android:padding="18dp"
+                android:textSize="18dp"
+                android:clickable="false" />
 
         </RelativeLayout>
 
