@@ -43,6 +43,8 @@ public class DashboardActivity extends AppCompatActivity {
     private static List<String> _deviceNames;
     private static List<String> _deviceFunctions;
 
+    private boolean toggled = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -124,6 +126,20 @@ public class DashboardActivity extends AppCompatActivity {
 
         if (targetDevice != null)
             callDeviceFunction(targetDevice);
+    }
+
+    public void sendBoolFunction (View view) {
+        String deviceName = deviceList.getSelectedItem().toString();
+        ParticleDevice targetDevice = null;
+
+        for (ParticleDevice d: _myDevices) {
+            if (d.getName().equals(deviceName)) {
+                targetDevice = d;
+            }
+        }
+
+        if (targetDevice != null)
+            callDeviceBoolFunction(targetDevice);
     }
 
     public void logOut (View view) {
@@ -235,9 +251,66 @@ public class DashboardActivity extends AppCompatActivity {
         });
     }
 
-    private void callDeviceFunction (final ParticleDevice device) {
+    private void callDeviceBoolFunction (ParticleDevice device) {
+        final ParticleDevice particleDevice = device;
         final String function = (String) functionList.getSelectedItem();
-        final List<String> commands = Arrays.asList(((EditText) findViewById(R.id.function_parameters)).getText().toString());
+
+        functionSend.setEnabled(false);
+
+        if (device != null) {
+            Async.executeAsync(ParticleCloudSDK.getCloud(), new Async.ApiWork<ParticleCloud, Integer>() {
+                @Override
+                public Integer callApi(ParticleCloud particleCloud) throws ParticleCloudException, IOException {
+                    List<String> commands = null;
+
+                    // Check for global status variable
+                    try {
+                        if (particleDevice.getVariable("status") == "1")
+                            commands = Arrays.asList("0");
+                        else commands = Arrays.asList("1");
+                    } catch (ParticleDevice.VariableDoesNotExistException e) {
+                        e.printStackTrace();
+                    }
+
+                    if (commands == null) {
+                        if (toggled)
+                            commands = Arrays.asList("0");
+                        else {
+                            commands = Arrays.asList("1");
+                            toggled = true;
+                        }
+                    }
+
+                    try {
+                        return particleDevice.callFunction(function, commands);
+                    } catch (ParticleDevice.FunctionDoesNotExistException e) {
+                        e.printStackTrace();
+                    }
+                    return 1;
+                }
+
+                @Override
+                public void onSuccess (Integer i) {
+                    if (i != 1)
+                        Toaster.l(DashboardActivity.this, "Function ran successfully with return value of " + i);
+                    else
+                        Toaster.l(DashboardActivity.this, "Error when attempting to call function!");
+                    functionSend.setEnabled(true);
+                }
+
+                @Override
+                public void onFailure(ParticleCloudException exception) {
+                    exception.printStackTrace();
+                    functionSend.setEnabled(true);
+                }
+            });
+        }
+    }
+
+    private void callDeviceFunction (ParticleDevice device) {
+        final ParticleDevice particleDevice = device;
+        final String function = (String) functionList.getSelectedItem();
+        final List<String> commands = Arrays.asList(functionParameters.getText().toString());
 
         functionSend.setEnabled(false);
 
@@ -246,16 +319,16 @@ public class DashboardActivity extends AppCompatActivity {
                 @Override
                 public Integer callApi(ParticleCloud particleCloud) throws ParticleCloudException, IOException {
                     try {
-                        return device.callFunction(function, commands);
+                        return particleDevice.callFunction(function, commands);
                     } catch (ParticleDevice.FunctionDoesNotExistException e) {
                         e.printStackTrace();
                     }
-                    return -1;
+                    return 1;
                 }
 
                 @Override
                 public void onSuccess (Integer i) {
-                    if (i != -1)
+                    if (i != 1)
                         Toaster.l(DashboardActivity.this, "Function ran successfully with return value of " + i);
                     else
                         Toaster.l(DashboardActivity.this, "Error when attempting to call function!");
