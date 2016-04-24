@@ -36,5 +36,5 @@
         android:text="Login"
         android:textSize="24dp"
         android:onClick="sendLogin"
-        android:id="@+id/button" />
+        android:id="@+id/login_button" />
 </RelativeLayout>

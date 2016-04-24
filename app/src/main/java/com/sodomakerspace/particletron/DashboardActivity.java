@@ -4,14 +4,18 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,14 +32,16 @@ import io.particle.android.sdk.utils.Toaster;
 public class DashboardActivity extends AppCompatActivity {
 
     // UI elements
-    private static Spinner deviceList;
-    private static Spinner functionList;
     private static LinearLayout dashboardLayout;
     private static ImageView deviceStatus;
+    private static Spinner deviceList;
+    private static Spinner functionList;
+    private static EditText functionParameters;
+    private static Button functionSend;
 
     private static List<ParticleDevice> _myDevices;
     private static List<String> _deviceNames;
-    private static List<String> deviceFunctions;
+    private static List<String> _deviceFunctions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,10 +49,12 @@ public class DashboardActivity extends AppCompatActivity {
         setContentView(R.layout.activity_dashboard);
 
         // Get our UI elements
-        deviceList = (Spinner) findViewById(R.id.deviceName_spinner);
-        functionList = (Spinner) findViewById(R.id.functionName_spinner);
         dashboardLayout = (LinearLayout) findViewById(R.id.view_dashboard);
         deviceStatus = (ImageView) findViewById(R.id.deviceStatus_image);
+        deviceList = (Spinner) findViewById(R.id.deviceName_spinner);
+        functionList = (Spinner) findViewById(R.id.functionName_spinner);
+        functionParameters = (EditText) findViewById(R.id.function_parameters);
+        functionSend = (Button) findViewById(R.id.send_button);
 
         // Create our toolbar
         Toolbar dashboardToolbar = (Toolbar) findViewById(R.id.dashboard_toolbar);
@@ -57,6 +65,29 @@ public class DashboardActivity extends AppCompatActivity {
 
         // Query our devices
         getDevices();
+
+        // Listener for user calling device function
+        functionParameters.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                boolean handled = false;
+                String myDeviceName = deviceList.getSelectedItem().toString();
+                ParticleDevice myDevice = null;
+
+                for (ParticleDevice d: _myDevices) {
+                    if (d.getName().equals(myDeviceName))
+                        myDevice = d;
+                }
+
+                if (actionId == EditorInfo.IME_ACTION_SEND) {
+                    // Call device function
+                    if (myDevice != null)
+                        callDeviceFunction(myDevice);
+                    handled = true;
+                }
+                return handled;
+            }
+        });
     }
 
     @Override
@@ -128,10 +159,10 @@ public class DashboardActivity extends AppCompatActivity {
         if (_myDevices != null && deviceName != null && deviceStatus != null) {
             if (deviceName.equals("Refresh list")) {
                 deviceStatus.setImageResource(R.drawable.ic_flash_off_black_24dp);
-                deviceFunctions = new ArrayList<>();
-                deviceFunctions.add("No functions found");
+                _deviceFunctions = new ArrayList<>();
+                _deviceFunctions.add("No functions found");
                 // Create an ArrayAdapter using the string list and a default spinner layout
-                ArrayAdapter<String> adapter = new ArrayAdapter<>(dashboardLayout.getContext(), android.R.layout.simple_spinner_dropdown_item, deviceFunctions);
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(dashboardLayout.getContext(), android.R.layout.simple_spinner_dropdown_item, _deviceFunctions);
                 // Apply the adapter to the spinner
                 if (functionList != null)
                     functionList.setAdapter(adapter);
@@ -140,41 +171,7 @@ public class DashboardActivity extends AppCompatActivity {
             // Find our target device
             for (ParticleDevice d : _myDevices) {
                 if (d.getName().equals(deviceName)) {
-                    final ParticleDevice particleDevice = d;
-
-                    // Attempt to wake the device
-                    Async.executeAsync(ParticleCloudSDK.getCloud(), new Async.ApiWork<ParticleCloud, Integer>() {
-                        @Override
-                        public Integer callApi(ParticleCloud particleCloud) throws ParticleCloudException, IOException {
-                            particleDevice.refresh();
-                            return 1;
-                        }
-
-                        @Override
-                        public void onSuccess(Integer i) {
-                            if (particleDevice.isConnected()) {
-                                deviceStatus.setImageResource(R.drawable.ic_flash_on_black_24dp);
-                            } else
-                                deviceStatus.setImageResource(R.drawable.ic_flash_off_black_24dp);
-
-                            // Populate available functions in dropdown menu
-                            getDeviceFunction(particleDevice.getName());
-                            if (deviceFunctions == null || deviceFunctions.size() == 0) {
-                                deviceFunctions = new ArrayList<>();
-                                deviceFunctions.add("No functions found");
-                            }
-                            // Create an ArrayAdapter using the string list and a default spinner layout
-                            ArrayAdapter<String> adapter = new ArrayAdapter<>(dashboardLayout.getContext(), android.R.layout.simple_spinner_dropdown_item, deviceFunctions);
-                            // Apply the adapter to the spinner
-                            if (functionList != null)
-                                functionList.setAdapter(adapter);
-                        }
-
-                        @Override
-                        public void onFailure(ParticleCloudException exception) {
-                            exception.printStackTrace();
-                        }
-                    });
+                    updateFunctionList(d);
                 }
             }
         }
@@ -192,28 +189,57 @@ public class DashboardActivity extends AppCompatActivity {
         }
     }
 
-    public static void getDeviceFunction(String deviceName) {
-        List<String> functionNames = new ArrayList<>();
+    public static void updateFunctionList (ParticleDevice device) {
+        final List<String> functionNames = new ArrayList<>();
+        final ParticleDevice particleDevice = device;
 
-        if (_myDevices != null && deviceName != null) {
-            // Find our target device
-            for (ParticleDevice d : _myDevices) {
-                if (d.getName().equals(deviceName)) {
-                    if (d.isConnected()) {
-                        // Add all available function names on target device to our return list
-                        for (String s : d.getFunctions()) {
-                            functionNames.add(s);
-                        }
-                    }
-                }
+        deviceList.setEnabled(false);
+        functionList.setEnabled(false);
+
+        // Attempt to wake the device before querying its functions
+        Async.executeAsync(ParticleCloudSDK.getCloud(), new Async.ApiWork<ParticleCloud, List<String>>() {
+            @Override
+            public List<String> callApi(ParticleCloud particleCloud) throws ParticleCloudException, IOException {
+                particleDevice.refresh();
+                for (String s : particleDevice.getFunctions())
+                    functionNames.add(s);
+                return functionNames;
             }
-            deviceFunctions = functionNames;
-        }
+
+            // Populate available functions in dropdown menu
+            @Override
+            public void onSuccess (List<String> functions) {
+                if (particleDevice.isConnected())
+                    deviceStatus.setImageResource(R.drawable.ic_flash_on_black_24dp);
+                else
+                    deviceStatus.setImageResource(R.drawable.ic_flash_off_black_24dp);
+
+                if (functions.size() == 0)
+                    functions.add("No functions found");
+
+                // Create an ArrayAdapter using the string list and a default spinner layout
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(dashboardLayout.getContext(), android.R.layout.simple_spinner_dropdown_item, functions);
+                // Apply the adapter to the spinner
+                if (functionList != null)
+                    functionList.setAdapter(adapter);
+                deviceList.setEnabled(true);
+                functionList.setEnabled(true);
+            }
+
+            @Override
+            public void onFailure(ParticleCloudException exception) {
+                exception.printStackTrace();
+                deviceList.setEnabled(true);
+                functionList.setEnabled(true);
+            }
+        });
     }
 
     private void callDeviceFunction (final ParticleDevice device) {
         final String function = (String) functionList.getSelectedItem();
         final List<String> commands = Arrays.asList(((EditText) findViewById(R.id.function_parameters)).getText().toString());
+
+        functionSend.setEnabled(false);
 
         if (device != null) {
             Async.executeAsync(ParticleCloudSDK.getCloud(), new Async.ApiWork<ParticleCloud, Integer>() {
@@ -233,11 +259,13 @@ public class DashboardActivity extends AppCompatActivity {
                         Toaster.l(DashboardActivity.this, "Function ran successfully with return value of " + i);
                     else
                         Toaster.l(DashboardActivity.this, "Error when attempting to call function!");
+                    functionSend.setEnabled(true);
                 }
 
                 @Override
                 public void onFailure(ParticleCloudException exception) {
                     exception.printStackTrace();
+                    functionSend.setEnabled(true);
                 }
             });
         }

@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -24,6 +25,7 @@ public class LoginActivity extends AppCompatActivity {
     // UI Elements
     private EditText emailField;
     private EditText passwordField;
+    private Button loginButton;
 
     private SharedPreferences loginPref;
 
@@ -35,6 +37,7 @@ public class LoginActivity extends AppCompatActivity {
         // Grab our UI elements
         emailField = (EditText) findViewById(R.id.email_editText);
         passwordField = (EditText) findViewById(R.id.password_editText);
+        loginButton = (Button) findViewById(R.id.login_button);
 
         // Populate our login field if we can find stored data
         loginPref = this.getPreferences(Context.MODE_PRIVATE);
@@ -87,6 +90,8 @@ public class LoginActivity extends AppCompatActivity {
         final String email = emailField.getText().toString();
         final String password = passwordField.getText().toString();
 
+        loginButton.setEnabled(false);
+
         Async.executeAsync(ParticleCloudSDK.getCloud(), new Async.ApiWork<ParticleCloud, Object>() {
             @Override
             public Object callApi(ParticleCloud particleCloud) throws ParticleCloudException, IOException {
@@ -98,12 +103,14 @@ public class LoginActivity extends AppCompatActivity {
             public void onSuccess(Object o) {
                 // We've logged in successfully so switch to the user's dashboard
                 launchDashboard();
+                loginButton.setEnabled(true);
             }
 
             @Override
             public void onFailure(ParticleCloudException exception) {
                 Toaster.l(LoginActivity.this, "Uh oh, those credentials don't match our records.");
                 exception.printStackTrace();
+                loginButton.setEnabled(true);
             }
         });
     }

@@ -9,7 +9,6 @@ public class DeviceSpinnerActivity extends Activity implements AdapterView.OnIte
     public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
         String deviceName = (String) parent.getItemAtPosition(pos);
 
-        // TODO: Lock the function field during the query
         // Query the device
         DashboardActivity.updateDeviceStatus(deviceName);
     }
