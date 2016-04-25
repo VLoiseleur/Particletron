@@ -27,7 +27,12 @@ public class LoginActivity extends AppCompatActivity {
     private EditText passwordField;
     private Button loginButton;
 
+    // SharedPreferences file properties
+    public static final String PREFS_NAME = "loginPrefs";
+    // TODO: Obfuscate this
+    private static final String KEY = "ihGJbBbnQiQwnyF/Txmt879PGBsJKVjXZ4tLDxod3eA=/t";
     private SharedPreferences loginPref;
+    private SecurePreferences securePreferences;
 
     @Override
     protected void onCreate (Bundle savedInstanceState) {
@@ -39,14 +44,19 @@ public class LoginActivity extends AppCompatActivity {
         passwordField = (EditText) findViewById(R.id.password_editText);
         loginButton = (Button) findViewById(R.id.login_button);
 
+        // Initialize our secure preferences
+        securePreferences = new SecurePreferences(this, PREFS_NAME, KEY, true);
+
         // Populate our login field if we can find stored data
-        loginPref = this.getPreferences(Context.MODE_PRIVATE);
+        loginPref = this.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         String defaultField = "";
         String loginEmail = loginPref.getString(getString(R.string.saved_email), defaultField);
         if (!loginEmail.isEmpty() && emailField != null)
             emailField.setText(loginEmail);
 
-        String loginPassword = loginPref.getString(getString(R.string.saved_password), defaultField);
+        String loginPassword = securePreferences.getString(getString(R.string.saved_password));
+        if (loginPassword == null)
+            loginPassword = defaultField;
         if (!loginPassword.isEmpty() && passwordField != null)
             passwordField.setText(loginPassword);
 
@@ -75,12 +85,15 @@ public class LoginActivity extends AppCompatActivity {
         String emailLogin = emailField.getText().toString();
 
         // TODO: Encrypt password
+        char[] password = new char[passwordField.getText().length()];
+        passwordField.getText().getChars(0, passwordField.getText().length(), password, 0);
+
         String passwordLogin = passwordField.getText().toString();
 
         SharedPreferences.Editor editor = loginPref.edit();
         // Does getString() return the value or the key?
         editor.putString(getString(R.string.saved_email), emailLogin);
-        editor.putString(getString(R.string.saved_password), passwordLogin);
+        securePreferences.put(getString(R.string.saved_password), passwordLogin);
         editor.apply();
     }
 
