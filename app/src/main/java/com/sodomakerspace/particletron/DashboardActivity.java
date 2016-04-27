@@ -99,6 +99,13 @@ public class DashboardActivity extends AppCompatActivity {
         return true;
     }
 
+    @Override
+    public void onBackPressed() {
+        logOut(getCurrentFocus());
+        Toaster.l(DashboardActivity.this, "Logged out successfully");
+        super.onBackPressed();
+    }
+
     private static void populateDeviceSpinner (View view) {
         if (_deviceNames != null) {
             // TODO: This is pretty hacky to refresh so find a better solution

@@ -2,6 +2,7 @@
     <string name="app_name">Particletron</string>
     <string name="saved_email">testuser</string>
     <string name="saved_password">testpass</string>
+    <string name="encryption_key">""</string>
     <string name="action_new">New</string>
     <string name="action_settings">Settings</string>
     <string name="dashboard_header">My Particle devices</string>
