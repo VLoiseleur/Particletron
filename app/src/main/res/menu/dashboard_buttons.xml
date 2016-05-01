@@ -15,4 +15,9 @@
         android:title="@string/action_settings"
         app:showAsAction="never"/>
 
+    <!-- Logout, should always be in the overflow -->
+    <item android:id="@+id/action_logout"
+        android:icon="@drawable/ic_exit_to_app_black_48dp"
+        android:title="@string/action_logout"
+        app:showAsAction="never"/>
 </menu>

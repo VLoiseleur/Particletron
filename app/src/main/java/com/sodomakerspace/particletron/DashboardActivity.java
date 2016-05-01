@@ -7,6 +7,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
@@ -40,6 +41,7 @@ public class DashboardActivity extends AppCompatActivity {
     private static Spinner variableList;
     private static EditText functionParameters;
     private static Button functionSend;
+    private static Button functionSendBool;
     private static TextView outputLog;
 
     private static List<ParticleDevice> _myDevices;
@@ -62,7 +64,11 @@ public class DashboardActivity extends AppCompatActivity {
         variableList = (Spinner) findViewById(R.id.variableName_spinner);
         functionParameters = (EditText) findViewById(R.id.function_parameters);
         functionSend = (Button) findViewById(R.id.send_button);
+        functionSendBool = (Button) findViewById(R.id.sendBool_button);
         outputLog = (TextView) findViewById(R.id.output_textView);
+
+        // Disable initial user input
+        disableUserInput(true);
 
         // Create our toolbar
         Toolbar dashboardToolbar = (Toolbar) findViewById(R.id.dashboard_toolbar);
@@ -70,6 +76,12 @@ public class DashboardActivity extends AppCompatActivity {
             dashboardToolbar.setTitle("Dashboard");
             setSupportActionBar(dashboardToolbar);
         }
+
+        // Set up our spinner listeners
+        DeviceSpinnerActivity deviceSpinnerActivity = new DeviceSpinnerActivity();
+        deviceList.setOnItemSelectedListener(deviceSpinnerActivity);
+        VariableNameSpinnerActivity variableNameSpinnerActivity = new VariableNameSpinnerActivity();
+        variableList.setOnItemSelectedListener(variableNameSpinnerActivity);
 
         // Query our devices
         getDevices();
@@ -106,11 +118,29 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onBackPressed() {
-        logOut(getCurrentFocus());
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                // User chose the "Settings" item, show the app settings UI...
+                return true;
+
+            case R.id.action_logout:
+                logOut();
+                return true;
+
+            default:
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item);
+        }
     }
 
-    private static void populateDeviceSpinner (View view) {
+    @Override
+    public void onBackPressed() {
+        logOut();
+    }
+
+    private static void populateSpinners(View view) {
         if (_deviceNames != null) {
             // TODO: This is pretty hacky to refresh so find a better solution
             _deviceNames.add("Refresh list");
@@ -119,9 +149,6 @@ public class DashboardActivity extends AppCompatActivity {
             ArrayAdapter<String> adapter = new ArrayAdapter<>(view.getContext(), android.R.layout.simple_spinner_dropdown_item, _deviceNames);
             // Apply the adapter to the spinner
             deviceList.setAdapter(adapter);
-            // Set up our spinner listener to populate our function spinner
-            DeviceSpinnerActivity mySpinnerActivity = new DeviceSpinnerActivity();
-            deviceList.setOnItemSelectedListener(mySpinnerActivity);
         }
     }
 
@@ -153,7 +180,24 @@ public class DashboardActivity extends AppCompatActivity {
             callDeviceBoolFunction(targetDevice);
     }
 
-    public void logOut (View view) {
+    private static void disableUserInput (boolean disabled) throws NullPointerException {
+        if (disabled) {
+            deviceList.setEnabled(false);
+            functionList.setEnabled(false);
+            variableList.setEnabled(false);
+            functionSend.setEnabled(false);
+            functionSendBool.setEnabled(false);
+        }
+        else {
+            deviceList.setEnabled(true);
+            functionList.setEnabled(true);
+            variableList.setEnabled(true);
+            functionSend.setEnabled(true);
+            functionSendBool.setEnabled(true);
+        }
+    }
+
+    public void logOut () {
         ParticleCloudSDK.getCloud().logOut();
         Toaster.l(DashboardActivity.this, "Logged out successfully");
         Intent intent = new Intent(this, LoginActivity.class);
@@ -173,7 +217,7 @@ public class DashboardActivity extends AppCompatActivity {
             // Populate a spinner with each registered device
             public void onSuccess(Integer i) {
                 getDeviceNames(_myDevices);
-                populateDeviceSpinner(dashboardLayout);
+                populateSpinners(dashboardLayout);
             }
 
             @Override
@@ -229,9 +273,7 @@ public class DashboardActivity extends AppCompatActivity {
         final List<String> variableNames = new ArrayList<>();
         final ParticleDevice particleDevice = device;
 
-        deviceList.setEnabled(false);
-        functionList.setEnabled(false);
-        variableList.setEnabled(false);
+        disableUserInput(true);
 
         // Attempt to wake the device before querying its variables
         Async.executeAsync(ParticleCloudSDK.getCloud(), new Async.ApiWork<ParticleCloud, List<String>>() {
@@ -262,17 +304,13 @@ public class DashboardActivity extends AppCompatActivity {
                 if (variableList != null)
                     variableList.setAdapter(adapter);
 
-                deviceList.setEnabled(true);
-                functionList.setEnabled(true);
-                variableList.setEnabled(true);
+                disableUserInput(false);
             }
 
             @Override
             public void onFailure(ParticleCloudException exception) {
                 exception.printStackTrace();
-                deviceList.setEnabled(true);
-                functionList.setEnabled(true);
-                variableList.setEnabled(true);
+                disableUserInput(false);
             }
         });
     }
@@ -281,9 +319,7 @@ public class DashboardActivity extends AppCompatActivity {
         final List<String> functionNames = new ArrayList<>();
         final ParticleDevice particleDevice = device;
 
-        deviceList.setEnabled(false);
-        functionList.setEnabled(false);
-        variableList.setEnabled(false);
+        disableUserInput(true);
 
         // Attempt to wake the device before querying its functions
         Async.executeAsync(ParticleCloudSDK.getCloud(), new Async.ApiWork<ParticleCloud, List<String>>() {
@@ -312,17 +348,13 @@ public class DashboardActivity extends AppCompatActivity {
                 if (functionList != null)
                     functionList.setAdapter(adapter);
 
-                deviceList.setEnabled(true);
-                functionList.setEnabled(true);
-                variableList.setEnabled(true);
+                disableUserInput(false);
             }
 
             @Override
             public void onFailure(ParticleCloudException exception) {
                 exception.printStackTrace();
-                deviceList.setEnabled(true);
-                functionList.setEnabled(true);
-                variableList.setEnabled(true);
+                disableUserInput(false);
             }
         });
     }
@@ -331,7 +363,7 @@ public class DashboardActivity extends AppCompatActivity {
         final ParticleDevice particleDevice = device;
         final String function = (String) functionList.getSelectedItem();
 
-        functionSend.setEnabled(false);
+        disableUserInput(true);
 
         if (device != null) {
             Async.executeAsync(ParticleCloudSDK.getCloud(), new Async.ApiWork<ParticleCloud, Integer>() {
@@ -341,16 +373,20 @@ public class DashboardActivity extends AppCompatActivity {
 
                     // Check for global status variable
                     try {
-                        if (particleDevice.getVariable("status") == "1")
+                        if (particleDevice.getVariable("status").toString().equals("1.0"))
                             commands = Arrays.asList("0");
-                        else commands = Arrays.asList("1");
+                        else if (particleDevice.getVariable("status").toString().equals("0.0"))
+                            commands = Arrays.asList("1");
                     } catch (ParticleDevice.VariableDoesNotExistException e) {
                         e.printStackTrace();
                     }
 
+                    // Could not find a global status variable on target device
                     if (commands == null) {
-                        if (toggled)
+                        if (toggled) {
                             commands = Arrays.asList("0");
+                            toggled = false;
+                        }
                         else {
                             commands = Arrays.asList("1");
                             toggled = true;
@@ -367,17 +403,15 @@ public class DashboardActivity extends AppCompatActivity {
 
                 @Override
                 public void onSuccess (Integer i) {
-                    if (i != 1)
-                        Toaster.l(DashboardActivity.this, "Function ran successfully with return value of " + i);
-                    else
-                        Toaster.l(DashboardActivity.this, "Error when attempting to call function!");
-                    functionSend.setEnabled(true);
+                    Toaster.l(DashboardActivity.this, "Function ran with return value of " + i);
+                    disableUserInput(false);
                 }
 
                 @Override
                 public void onFailure(ParticleCloudException exception) {
+                    Toaster.l(DashboardActivity.this, "Error attempting to run function!");
                     exception.printStackTrace();
-                    functionSend.setEnabled(true);
+                    disableUserInput(false);
                 }
             });
         }
@@ -388,7 +422,7 @@ public class DashboardActivity extends AppCompatActivity {
         final String function = (String) functionList.getSelectedItem();
         final List<String> commands = Arrays.asList(functionParameters.getText().toString());
 
-        functionSend.setEnabled(false);
+        disableUserInput(true);
 
         if (device != null) {
             Async.executeAsync(ParticleCloudSDK.getCloud(), new Async.ApiWork<ParticleCloud, Integer>() {
@@ -404,17 +438,16 @@ public class DashboardActivity extends AppCompatActivity {
 
                 @Override
                 public void onSuccess (Integer i) {
-                    if (i != 1)
-                        Toaster.l(DashboardActivity.this, "Function ran successfully with return value of " + i);
-                    else
-                        Toaster.l(DashboardActivity.this, "Error when attempting to call function!");
-                    functionSend.setEnabled(true);
+                    Toaster.l(DashboardActivity.this, "Function ran with return value of " + i);
+                    functionParameters.setText("");
+                    disableUserInput(false);
                 }
 
                 @Override
                 public void onFailure(ParticleCloudException exception) {
+                    Toaster.l(DashboardActivity.this, "Error attempting to run function!");
                     exception.printStackTrace();
-                    functionSend.setEnabled(true);
+                    disableUserInput(false);
                 }
             });
         }
@@ -430,55 +463,55 @@ public class DashboardActivity extends AppCompatActivity {
             if (d.getName().equals(deviceName)) {
                 targetDevice = d;
             }
-            else return;
         }
 
         final ParticleDevice particleDevice = targetDevice;
 
         if (particleDevice != null) {
-            deviceList.setEnabled(false);
-            functionList.setEnabled(false);
-            variableList.setEnabled(false);
+            disableUserInput(true);
 
             // Attempt to wake the device before querying the selected variable
             Async.executeAsync(ParticleCloudSDK.getCloud(), new Async.ApiWork<ParticleCloud, String>() {
                 @Override
                 public String callApi(ParticleCloud particleCloud) throws ParticleCloudException, IOException {
-                    particleDevice.refresh();
-                    Map<String, ParticleDevice.VariableType> variables = particleDevice.getVariables();
-                    String value = null;
-                    for (String name : variables.keySet()) {
-                        if(name.equals(variableName)) {
-                            value = variables.get(name).toString();
+                    try {
+                        String value = null;
+                        particleDevice.refresh();
+                        Map<String, ParticleDevice.VariableType> variables = particleDevice.getVariables();
+
+                        for (String name : variables.keySet()) {
+                            if (name.equals(variableName)) {
+                                value = particleDevice.getVariable(name).toString();
+                            }
                         }
+
+                        return value;
                     }
-                    return value;
+                    catch (ParticleDevice.VariableDoesNotExistException e) {
+                        return null;
+                    }
                 }
 
                 // Print variable name to text view
                 @Override
                 public void onSuccess(String variable) {
-                    if (particleDevice.isConnected())
+                    if (particleDevice.isConnected()) {
                         deviceStatus.setImageResource(R.drawable.ic_flash_on_black_24dp);
+                        if (variable == null || variable.equals(""))
+                            outputLog.append("No variables found" + "\n");
+                        else
+                            outputLog.append("Variable " + variableName + " has value of: " + variable + "\n");
+                    }
                     else
                         deviceStatus.setImageResource(R.drawable.ic_flash_off_black_24dp);
 
-                    if (variable == null || variable.equals(""))
-                        outputLog.append("No variables found" + "\n");
-                    else
-                        outputLog.append("Variable " + variableName + " has value of: " + variable);
-
-                    deviceList.setEnabled(true);
-                    functionList.setEnabled(true);
-                    variableList.setEnabled(true);
+                    disableUserInput(false);
                 }
 
                 @Override
                 public void onFailure(ParticleCloudException exception) {
                     exception.printStackTrace();
-                    deviceList.setEnabled(true);
-                    functionList.setEnabled(true);
-                    variableList.setEnabled(true);
+                    disableUserInput(false);
                 }
             });
         }

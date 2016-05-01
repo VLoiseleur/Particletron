@@ -4,6 +4,7 @@
     <string name="saved_password">testpass</string>
     <string name="encryption_key">""</string>
     <string name="action_new">New</string>
-    <string name="action_settings">Settings</string>
+    <string name="action_settings">Settings (Not implemented!)</string>
+    <string name="action_logout">Logout</string>
     <string name="dashboard_header">My Particle devices</string>
 </resources>

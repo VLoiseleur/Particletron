@@ -9,7 +9,7 @@ public class VariableNameSpinnerActivity extends Activity implements AdapterView
     public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
         String variableName = (String) parent.getItemAtPosition(pos);
 
-        // Query the device
+        // TODO: Move the query to its own button
         DashboardActivity.queryDeviceVariable(variableName);
     }
 
