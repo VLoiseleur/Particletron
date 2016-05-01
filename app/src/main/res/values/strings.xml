@@ -3,6 +3,7 @@
     <string name="saved_email">testuser</string>
     <string name="saved_password">testpass</string>
     <string name="encryption_key">""</string>
+    <string name="action_refresh">Refresh</string>
     <string name="action_new">New</string>
     <string name="action_settings">Settings (Not implemented!)</string>
     <string name="action_logout">Logout</string>

@@ -42,12 +42,11 @@ public class DashboardActivity extends AppCompatActivity {
     private static EditText functionParameters;
     private static Button functionSend;
     private static Button functionSendBool;
+    private static Button variableRead;
     private static TextView outputLog;
 
     private static List<ParticleDevice> _myDevices;
     private static List<String> _deviceNames;
-    private static List<String> _deviceFunctions;
-    private static List<String> _deviceVariables;
 
     private boolean toggled = false;
 
@@ -65,6 +64,7 @@ public class DashboardActivity extends AppCompatActivity {
         functionParameters = (EditText) findViewById(R.id.function_parameters);
         functionSend = (Button) findViewById(R.id.send_button);
         functionSendBool = (Button) findViewById(R.id.sendBool_button);
+        variableRead = (Button) findViewById(R.id.read_button);
         outputLog = (TextView) findViewById(R.id.output_textView);
 
         // Disable initial user input
@@ -77,11 +77,9 @@ public class DashboardActivity extends AppCompatActivity {
             setSupportActionBar(dashboardToolbar);
         }
 
-        // Set up our spinner listeners
+        // Set up our spinner listener
         DeviceSpinnerActivity deviceSpinnerActivity = new DeviceSpinnerActivity();
         deviceList.setOnItemSelectedListener(deviceSpinnerActivity);
-        VariableNameSpinnerActivity variableNameSpinnerActivity = new VariableNameSpinnerActivity();
-        variableList.setOnItemSelectedListener(variableNameSpinnerActivity);
 
         // Query our devices
         getDevices();
@@ -120,8 +118,10 @@ public class DashboardActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_settings:
-                // User chose the "Settings" item, show the app settings UI...
+            case R.id.action_refresh:
+                // Refresh device, function, and variable lists
+                disableUserInput(true);
+                getDevices();
                 return true;
 
             case R.id.action_logout:
@@ -142,9 +142,6 @@ public class DashboardActivity extends AppCompatActivity {
 
     private static void populateSpinners(View view) {
         if (_deviceNames != null) {
-            // TODO: This is pretty hacky to refresh so find a better solution
-            _deviceNames.add("Refresh list");
-
             // Create an ArrayAdapter using the string list and a default spinner layout
             ArrayAdapter<String> adapter = new ArrayAdapter<>(view.getContext(), android.R.layout.simple_spinner_dropdown_item, _deviceNames);
             // Apply the adapter to the spinner
@@ -180,6 +177,20 @@ public class DashboardActivity extends AppCompatActivity {
             callDeviceBoolFunction(targetDevice);
     }
 
+    public void readDeviceVariable (View view) {
+        String deviceName = deviceList.getSelectedItem().toString();
+        ParticleDevice targetDevice = null;
+
+        for (ParticleDevice d: _myDevices) {
+            if (d.getName().equals(deviceName)) {
+                targetDevice = d;
+            }
+        }
+
+        if (targetDevice != null)
+            queryDeviceVariable(targetDevice);
+    }
+
     private static void disableUserInput (boolean disabled) throws NullPointerException {
         if (disabled) {
             deviceList.setEnabled(false);
@@ -187,6 +198,7 @@ public class DashboardActivity extends AppCompatActivity {
             variableList.setEnabled(false);
             functionSend.setEnabled(false);
             functionSendBool.setEnabled(false);
+            variableRead.setEnabled(false);
         }
         else {
             deviceList.setEnabled(true);
@@ -194,6 +206,7 @@ public class DashboardActivity extends AppCompatActivity {
             variableList.setEnabled(true);
             functionSend.setEnabled(true);
             functionSendBool.setEnabled(true);
+            variableRead.setEnabled(true);
         }
     }
 
@@ -229,24 +242,6 @@ public class DashboardActivity extends AppCompatActivity {
 
     public static void updateDeviceStatus (String deviceName) {
         if (_myDevices != null && deviceName != null && deviceStatus != null) {
-            // TODO: Super hacky, remove this when we figure out a better way to refresh
-            if (deviceName.equals("Refresh list")) {
-                deviceStatus.setImageResource(R.drawable.ic_flash_off_black_24dp);
-                _deviceFunctions = new ArrayList<>();
-                _deviceFunctions.add("No functions found");
-                _deviceVariables = new ArrayList<>();
-                _deviceVariables.add("No variables found");
-
-                // Create an ArrayAdapter using the device function list and a default spinner layout
-                ArrayAdapter<String> adapter = new ArrayAdapter<>(dashboardLayout.getContext(), android.R.layout.simple_spinner_dropdown_item, _deviceFunctions);
-                if (functionList != null)
-                    functionList.setAdapter(adapter);
-
-                adapter = new ArrayAdapter<>(dashboardLayout.getContext(), android.R.layout.simple_spinner_dropdown_item, _deviceVariables);
-                if (variableList != null)
-                    variableList.setAdapter(adapter);
-            }
-
             // Find our target device
             for (ParticleDevice d : _myDevices) {
                 if (d.getName().equals(deviceName)) {
@@ -365,7 +360,7 @@ public class DashboardActivity extends AppCompatActivity {
 
         disableUserInput(true);
 
-        if (device != null) {
+        if (particleDevice != null) {
             Async.executeAsync(ParticleCloudSDK.getCloud(), new Async.ApiWork<ParticleCloud, Integer>() {
                 @Override
                 public Integer callApi(ParticleCloud particleCloud) throws ParticleCloudException, IOException {
@@ -424,7 +419,7 @@ public class DashboardActivity extends AppCompatActivity {
 
         disableUserInput(true);
 
-        if (device != null) {
+        if (particleDevice != null) {
             Async.executeAsync(ParticleCloudSDK.getCloud(), new Async.ApiWork<ParticleCloud, Integer>() {
                 @Override
                 public Integer callApi(ParticleCloud particleCloud) throws ParticleCloudException, IOException {
@@ -453,19 +448,9 @@ public class DashboardActivity extends AppCompatActivity {
         }
     }
 
-    public static void queryDeviceVariable (String variable) {
-        final String variableName = variable;
-        String deviceName = (String) deviceList.getSelectedItem();
-        ParticleDevice targetDevice = null;
-
-        // Find our selected device
-        for (ParticleDevice d : _myDevices) {
-            if (d.getName().equals(deviceName)) {
-                targetDevice = d;
-            }
-        }
-
-        final ParticleDevice particleDevice = targetDevice;
+    public static void queryDeviceVariable (ParticleDevice device) {
+        final ParticleDevice particleDevice = device;
+        final String variableName = (String) variableList.getSelectedItem();
 
         if (particleDevice != null) {
             disableUserInput(true);

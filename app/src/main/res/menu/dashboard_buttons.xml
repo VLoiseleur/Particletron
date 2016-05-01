@@ -2,9 +2,16 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <!-- "New Button", should appear as action button if possible -->
+    <!-- Refresh, should appear as action button if possible -->
     <item
-        android:id="@+id/action_favorite"
+        android:id="@+id/action_refresh"
+        android:icon="@drawable/ic_autorenew_black_48dp"
+        android:title="@string/action_refresh"
+        app:showAsAction="ifRoom"/>
+
+    <!-- New Entry, should appear as action button if possible -->
+    <item
+        android:id="@+id/action_new"
         android:icon="@drawable/ic_create_black_48dp"
         android:title="@string/action_new"
         app:showAsAction="ifRoom"/>
