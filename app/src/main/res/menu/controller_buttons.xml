@@ -2,19 +2,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <!-- New Entry, should appear as action button if possible -->
+    <!-- Refresh, should appear as action button if possible -->
     <item
-        android:id="@+id/action_new"
-        android:icon="@drawable/ic_create_black_48dp"
-        android:title="@string/action_new"
+        android:id="@+id/action_refresh"
+        android:icon="@drawable/ic_autorenew_black_48dp"
+        android:title="@string/action_refresh"
         app:showAsAction="ifRoom"/>
-
-    <!-- Refresh, should always be in the overflow -->
-    <item
-        android:id="@+id/action_controller"
-        android:icon="@drawable/ic_settings_remote_black_48dp"
-        android:title="@string/action_controller"
-        app:showAsAction="never"/>
 
     <!-- Settings, should always be in the overflow -->
     <item android:id="@+id/action_settings"

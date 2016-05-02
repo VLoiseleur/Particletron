@@ -10,7 +10,7 @@ public class DeviceSpinnerActivity extends Activity implements AdapterView.OnIte
         String deviceName = (String) parent.getItemAtPosition(pos);
 
         // Query the device
-        DashboardActivity.updateDeviceStatus(deviceName);
+        ControllerActivity.updateDeviceStatus(deviceName);
     }
 
     public void onNothingSelected(AdapterView<?> parent) {}

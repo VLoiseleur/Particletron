@@ -3,9 +3,12 @@
     <string name="saved_email">testuser</string>
     <string name="saved_password">testpass</string>
     <string name="encryption_key">""</string>
+    <string name="appbarTitle_dashboard">Dashboard</string>
+    <string name="appbarTitle_controller">Controller</string>
     <string name="action_refresh">Refresh</string>
     <string name="action_new">New</string>
+    <string name="action_controller">Device Controller</string>
     <string name="action_settings">Settings (Not implemented!)</string>
     <string name="action_logout">Logout</string>
-    <string name="dashboard_header">My Particle devices</string>
+    <string name="controller_header">My Particle devices</string>
 </resources>
