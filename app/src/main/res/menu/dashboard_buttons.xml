@@ -2,10 +2,17 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <!-- New Entry, should appear as action button if possible -->
+    <!-- Edit Dashboard, should appear as action button if possible -->
+    <item
+        android:id="@+id/action_edit"
+        android:icon="@drawable/ic_create_black_48dp"
+        android:title="@string/action_edit"
+        app:showAsAction="ifRoom"/>
+
+    <!-- New Widget, should appear as action button if possible -->
     <item
         android:id="@+id/action_new"
-        android:icon="@drawable/ic_create_black_48dp"
+        android:icon="@drawable/ic_fiber_new_black_48dp"
         android:title="@string/action_new"
         app:showAsAction="ifRoom"/>
 

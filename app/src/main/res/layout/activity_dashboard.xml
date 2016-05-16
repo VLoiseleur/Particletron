@@ -20,4 +20,20 @@
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/dashboard_title"
+        android:text="@string/dashboard_header"
+        android:textAlignment="center"
+        android:textSize="36dp"
+        android:padding="4dp" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/dashboard_layout">
+
+    </RelativeLayout>
+
 </LinearLayout>
